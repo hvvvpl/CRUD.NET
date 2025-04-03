@@ -111,7 +111,7 @@
             // 
             listContatos.Location = new Point(233, 56);
             listContatos.Name = "listContatos";
-            listContatos.Size = new Size(418, 148);
+            listContatos.Size = new Size(418, 283);
             listContatos.TabIndex = 7;
             listContatos.UseCompatibleStateImageBehavior = false;
             // 
@@ -145,7 +145,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(663, 222);
+            ClientSize = new Size(663, 351);
             Controls.Add(button2);
             Controls.Add(txtBuscar);
             Controls.Add(label4);
@@ -158,7 +158,7 @@
             Controls.Add(label2);
             Controls.Add(label1);
             Name = "Form1";
-            Text = "Form1";
+            Text = "Agenda de contatos | CRUD com C# & MySql";
             ResumeLayout(false);
             PerformLayout();
         }

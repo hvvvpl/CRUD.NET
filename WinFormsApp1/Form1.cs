@@ -39,6 +39,21 @@ namespace WinFormsApp1
         {
             try
             {
+                
+                Conexao = new MySqlConnection(data_source);
+                Conexao.Open();
+                MySqlCommand cmd = new MySqlCommand();
+                cmd.Connection = Conexao;
+                cmd.CommandText = "INSERT INTO contato (nome, telefone, email) VALUES (@nome, @telefone, @email)";
+                cmd.Parameters.AddWithValue("@nome", txtNome.Text);
+                cmd.Parameters.AddWithValue("@telefone", txtTelefone.Text);
+                cmd.Parameters.AddWithValue("@email", txtEmail.Text);
+                cmd.Prepare();
+                cmd.ExecuteNonQuery();
+                MessageBox.Show("Contato inserido com sucesso!", "Sucesso!", 
+                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                /*
                 // criar conexão com MySql usando a propriedade criada na classe
                 Conexao = new MySqlConnection(data_source);         // objeto conexao com a fonte de dados como parâmetro
 
@@ -53,6 +68,12 @@ namespace WinFormsApp1
                 comando.ExecuteReader();
 
                 MessageBox.Show("Contato adicionado com sucesso!");
+                */
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show("Erro: " + ex.Number + " Ocorreu:" + ex.Message, "Erro",
+                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (Exception ex)
             {

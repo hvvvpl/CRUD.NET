@@ -1,4 +1,5 @@
-using MySql.Data.MySqlClient;  // diretiva do pacote NuGet MySql.Data
+using MySql.Data.MySqlClient;
+using Org.BouncyCastle.Asn1.Cmp;  // diretiva do pacote NuGet MySql.Data
 
 
 namespace WinFormsApp1
@@ -6,8 +7,12 @@ namespace WinFormsApp1
 
     public partial class Form1 : Form
     {
+        //https://dev.mysql.com/doc/connector-net/en/   //documentação do MySql connector no .NET
+
         private MySqlConnection Conexao;            // propriedade que conecta o programa com o MySql pelo pacote NuGet
         private string data_source = "datasource=localhost; username=root; password=; database=db_agenda";          // fonte de dados
+
+
         public Form1()
         {
             InitializeComponent();
@@ -23,7 +28,9 @@ namespace WinFormsApp1
             listContatos.Columns.Add("E-mail", 150, HorizontalAlignment.Left); // Adiciona a coluna 'E-mail'
             listContatos.Columns.Add("Telefone", 150, HorizontalAlignment.Left); // Adiciona a coluna 'Telefone'
 
+            CarregaContato();
         }
+
 
         /// <summary>
         /// 
@@ -34,7 +41,6 @@ namespace WinFormsApp1
         /// </summary>
         /// <param name="sender">button1_Click</param>
         /// <param name="e"></param>
-
         private void button1_Click(object sender, EventArgs e)
         {
             try
@@ -42,6 +48,7 @@ namespace WinFormsApp1
                 
                 Conexao = new MySqlConnection(data_source);
                 Conexao.Open();
+
                 MySqlCommand cmd = new MySqlCommand();
                 cmd.Connection = Conexao;
                 cmd.CommandText = "INSERT INTO contato (nome, telefone, email) VALUES (@nome, @telefone, @email)";
@@ -50,10 +57,15 @@ namespace WinFormsApp1
                 cmd.Parameters.AddWithValue("@email", txtEmail.Text);
                 cmd.Prepare();
                 cmd.ExecuteNonQuery();
+
                 MessageBox.Show("Contato inserido com sucesso!", "Sucesso!", 
                                  MessageBoxButtons.OK, MessageBoxIcon.Information);
+                CarregaContato();
+                LimpaCampos();
 
                 /*
+                 * código antigo
+                
                 // criar conexão com MySql usando a propriedade criada na classe
                 Conexao = new MySqlConnection(data_source);         // objeto conexao com a fonte de dados como parâmetro
 
@@ -85,6 +97,7 @@ namespace WinFormsApp1
             }
         }
 
+
         /// <summary>
         /// 
         /// cria uma string 'q' com o que foi inserido no textbox txtBuscar
@@ -98,29 +111,32 @@ namespace WinFormsApp1
         /// <param name="sender">button2_Click</param>
         /// <param name="e"></param>
         /// 
-
         private void button2_Click(object sender, EventArgs e)
         {
             try
             {
-                string q = "'%" + txtBuscar.Text + "%'";         //deve colocar aspas simples para o MySql entender como string 
-
-                // criar conexão com MySql 
                 Conexao = new MySqlConnection(data_source);
-
-                string sql = "SELECT * FROM contato " +
-                            "WHERE nome LIKE " + q + " OR email LIKE " + q;
-
-
-                // Executar comando INSERT
                 Conexao.Open();
 
-                MySqlCommand comando = new MySqlCommand(sql, Conexao);
+                MySqlCommand cmd = new MySqlCommand();
+                cmd.Connection = Conexao;
+                cmd.CommandText = "SELECT * FROM contato WHERE nome LIKE  @q  OR email LIKE @q";
+                cmd.Parameters.AddWithValue("@q", "%" + txtNome.Text + "%");
+                cmd.Prepare();
+                MySqlDataReader reader = cmd.ExecuteReader();
 
+                /*
+                string q = "'%" + txtBuscar.Text + "%'";         //deve colocar aspas simples para o MySql entender como string 
+                // criar conexão com MySql 
+                Conexao = new MySqlConnection(data_source);
+                string sql = "SELECT * FROM contato WHERE nome LIKE " + q + " OR email LIKE " + q;
+                // Executar comando INSERT
+                Conexao.Open();
+                MySqlCommand comando = new MySqlCommand(sql, Conexao);
                 MySqlDataReader reader = comando.ExecuteReader();
+                */
 
                 listContatos.Items.Clear();
-
                 while (reader.Read())       //retorna true sempre que houver mais registros para ler
                 {
                     string[] linha =        //armazena em um novo vetor os dados dos campos 0,1,2,3 da tabela contato
@@ -138,9 +154,15 @@ namespace WinFormsApp1
                         */
                     };
                     var linhaListView = new ListViewItem(linha);            //cria um objeto ListViewItem com os dados da linha
-
                     listContatos.Items.Add(linhaListView);          //exibe a variavel linhaListView na ListView listContatos
+            
                 }
+                
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show("Erro: " + ex.Number + " Ocorreu:" + ex.Message, "Erro",
+                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (Exception ex)
             {
@@ -150,6 +172,57 @@ namespace WinFormsApp1
             {
                 Conexao.Close();
             }
+        }
+
+
+        private void CarregaContato()
+        {
+            try
+            {
+                Conexao = new MySqlConnection(data_source);
+                Conexao.Open();
+
+                MySqlCommand cmd = new MySqlCommand();
+                cmd.Connection = Conexao;
+                cmd.CommandText = "SELECT * FROM contato ORDER BY id DESC";
+                cmd.Prepare();
+                MySqlDataReader reader = cmd.ExecuteReader();
+
+                listContatos.Items.Clear();
+                while (reader.Read())       //retorna true sempre que houver mais registros para ler
+                {
+                    string[] linha =        //armazena em um novo vetor os dados dos campos 0,1,2,3 da tabela contato
+                    {
+                        reader[0].ToString(),       // Converte qualquer tipo para string
+                        reader[1].ToString(),
+                        reader[2].ToString(),
+                        reader[3].ToString(),
+                    };
+                    var linhaListView = new ListViewItem(linha);            //cria um objeto ListViewItem com os dados da linha
+                    listContatos.Items.Add(linhaListView);          //exibe a variavel linhaListView na ListView listContatos
+                }
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show("Erro: " + ex.Number + " Ocorreu:" + ex.Message, "Erro",
+                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                Conexao.Close();
+            }
+        }
+
+
+        private void LimpaCampos()
+        {
+            txtNome.Clear();
+            txtTelefone.Clear();
+            txtEmail.Clear();
         }
     }
 }

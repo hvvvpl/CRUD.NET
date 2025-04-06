@@ -40,6 +40,7 @@
             label4 = new Label();
             txtBuscar = new TextBox();
             button2 = new Button();
+            button3 = new Button();
             SuspendLayout();
             // 
             // label1
@@ -92,9 +93,9 @@
             // 
             // button1
             // 
-            button1.Location = new Point(97, 181);
+            button1.Location = new Point(120, 181);
             button1.Name = "button1";
-            button1.Size = new Size(109, 27);
+            button1.Size = new Size(86, 27);
             button1.TabIndex = 6;
             button1.Text = "Salvar";
             button1.UseVisualStyleBackColor = true;
@@ -110,10 +111,12 @@
             // listContatos
             // 
             listContatos.Location = new Point(233, 56);
+            listContatos.MultiSelect = false;
             listContatos.Name = "listContatos";
             listContatos.Size = new Size(418, 283);
             listContatos.TabIndex = 7;
             listContatos.UseCompatibleStateImageBehavior = false;
+            listContatos.ItemSelectionChanged += listContatos_ItemSelectionChanged;
             // 
             // label4
             // 
@@ -141,11 +144,22 @@
             button2.UseVisualStyleBackColor = true;
             button2.Click += button2_Click;
             // 
+            // button3
+            // 
+            button3.Location = new Point(12, 181);
+            button3.Name = "button3";
+            button3.Size = new Size(86, 27);
+            button3.TabIndex = 11;
+            button3.Text = "novo";
+            button3.UseVisualStyleBackColor = true;
+            button3.Click += button3_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(663, 351);
+            Controls.Add(button3);
             Controls.Add(button2);
             Controls.Add(txtBuscar);
             Controls.Add(label4);
@@ -177,5 +191,6 @@
         private Label label4;
         private TextBox txtBuscar;
         private Button button2;
+        private Button button3;
     }
 }

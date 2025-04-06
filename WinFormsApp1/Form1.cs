@@ -11,6 +11,7 @@ namespace WinFormsApp1
 
         private MySqlConnection Conexao;            // propriedade que conecta o programa com o MySql pelo pacote NuGet
         private string data_source = "datasource=localhost; username=root; password=; database=db_agenda";          // fonte de dados
+        private int? idContatoSelecionado = null;
 
 
         public Form1()
@@ -45,23 +46,44 @@ namespace WinFormsApp1
         {
             try
             {
-                
+
                 Conexao = new MySqlConnection(data_source);
                 Conexao.Open();
 
                 MySqlCommand cmd = new MySqlCommand();
                 cmd.Connection = Conexao;
-                cmd.CommandText = "INSERT INTO contato (nome, telefone, email) VALUES (@nome, @telefone, @email)";
-                cmd.Parameters.AddWithValue("@nome", txtNome.Text);
-                cmd.Parameters.AddWithValue("@telefone", txtTelefone.Text);
-                cmd.Parameters.AddWithValue("@email", txtEmail.Text);
-                cmd.Prepare();
-                cmd.ExecuteNonQuery();
 
-                MessageBox.Show("Contato inserido com sucesso!", "Sucesso!", 
-                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
-                CarregaContato();
-                LimpaCampos();
+                if (idContatoSelecionado == null)
+                {
+                    cmd.CommandText = "INSERT INTO contato (nome, telefone, email) VALUES (@nome, @telefone, @email)";
+                    cmd.Parameters.AddWithValue("@nome", txtNome.Text);
+                    cmd.Parameters.AddWithValue("@telefone", txtTelefone.Text);
+                    cmd.Parameters.AddWithValue("@email", txtEmail.Text);
+                    cmd.Prepare();
+                    cmd.ExecuteNonQuery();
+
+                    MessageBox.Show("Contato inserido com sucesso!", "Sucesso!",
+                                     MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    cmd.CommandText = "UPDATE contato " +
+                                      "SET nome = @nome, email=@email, telefone=@telefone" +
+                                      "WHERE id=@id";
+                    cmd.Parameters.AddWithValue("@nome", txtNome.Text);
+                    cmd.Parameters.AddWithValue("@telefone", txtTelefone.Text);
+                    cmd.Parameters.AddWithValue("@email", txtEmail.Text);
+                    cmd.Parameters.AddWithValue("@id", idContatoSelecionado);
+                    cmd.Prepare();
+                    cmd.ExecuteNonQuery();
+
+                    MessageBox.Show("Contato atualizado com sucesso!", "Sucesso!",
+                                     MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+
+                idContatoSelecionado = null;
+                CarregaContato();       //mostra os contatos no listView
+                LimpaCampos();          //limpa os textboxes
 
                 /*
                  * código antigo
@@ -121,7 +143,7 @@ namespace WinFormsApp1
                 MySqlCommand cmd = new MySqlCommand();
                 cmd.Connection = Conexao;
                 cmd.CommandText = "SELECT * FROM contato WHERE nome LIKE  @q  OR email LIKE @q";
-                cmd.Parameters.AddWithValue("@q", "%" + txtNome.Text + "%");
+                cmd.Parameters.AddWithValue("@q", "%" + txtBuscar.Text + "%");
                 cmd.Prepare();
                 MySqlDataReader reader = cmd.ExecuteReader();
 
@@ -155,9 +177,9 @@ namespace WinFormsApp1
                     };
                     var linhaListView = new ListViewItem(linha);            //cria um objeto ListViewItem com os dados da linha
                     listContatos.Items.Add(linhaListView);          //exibe a variavel linhaListView na ListView listContatos
-            
+
                 }
-                
+
             }
             catch (MySqlException ex)
             {
@@ -223,6 +245,30 @@ namespace WinFormsApp1
             txtNome.Clear();
             txtTelefone.Clear();
             txtEmail.Clear();
+        }
+
+
+        private void listContatos_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
+        {
+            ListView.SelectedListViewItemCollection itensSelecionados = listContatos.SelectedItems;
+
+            foreach (ListViewItem item in itensSelecionados)
+            {
+                idContatoSelecionado = Convert.ToInt32(item.SubItems[0].Text);      //convert.toint32 aceita null como 0 sem lançar exeção (também aceita objetos)
+
+                txtNome.Text = item.SubItems[1].Text;       //pega o texto do campo 1 (nome) e coloca no textbox txtNome
+                txtTelefone.Text = item.SubItems[2].Text;   //pega o texto do campo 2 (telefone) e coloca no textbox txtTelefone
+                txtEmail.Text = item.SubItems[3].Text;      //pega o texto do campo 3 (email) e coloca no textbox txtEmail  
+            }
+        }
+
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            idContatoSelecionado = null;
+            LimpaCampos();
+            txtNome.Focus();
+
         }
     }
 }

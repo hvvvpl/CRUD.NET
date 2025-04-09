@@ -68,7 +68,7 @@ namespace WinFormsApp1
                 else
                 {
                     cmd.CommandText = "UPDATE contato " +
-                                      "SET nome = @nome, email=@email, telefone=@telefone" +
+                                      "SET nome =@nome, email=@email, telefone=@telefone " +
                                       "WHERE id=@id";
                     cmd.Parameters.AddWithValue("@nome", txtNome.Text);
                     cmd.Parameters.AddWithValue("@telefone", txtTelefone.Text);

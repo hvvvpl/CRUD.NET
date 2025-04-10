@@ -149,124 +149,14 @@ namespace WinFormsApp1
         }
 
 
-        private void CarregaContato()
-        {
-            try
-            {
-                Conexao = new MySqlConnection(data_source);
-                Conexao.Open();
-
-                MySqlCommand cmd = new MySqlCommand();
-                cmd.Connection = Conexao;
-                cmd.CommandText = "SELECT * FROM contato ORDER BY id DESC";
-                cmd.Prepare();
-                MySqlDataReader reader = cmd.ExecuteReader();
-
-                listContatos.Items.Clear();
-                while (reader.Read())       //retorna true sempre que houver mais registros para ler
-                {
-                    string[] linha =        //armazena em um novo vetor os dados dos campos 0,1,2,3 da tabela contato
-                    {
-                        reader[0].ToString(),       // Converte qualquer tipo para string
-                        reader[1].ToString(),
-                        reader[2].ToString(),
-                        reader[3].ToString(),
-                    };
-                    var linhaListView = new ListViewItem(linha);            //cria um objeto ListViewItem com os dados da linha
-                    listContatos.Items.Add(linhaListView);          //exibe a variavel linhaListView na ListView listContatos
-                }
-            }
-            catch (MySqlException ex)
-            {
-                MessageBox.Show("Erro: " + ex.Number + " Ocorreu:" + ex.Message, "Erro",
-                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            finally
-            {
-                Conexao.Close();
-            }
-        }
-
-
-        private void LimpaCampos()
-        {
-            idContatoSelecionado = null;
-            txtNome.Clear();
-            txtTelefone.Clear();
-            txtEmail.Clear();
-
-            txtNome.Focus();
-            button4.Visible = false;
-        }
-
-
-        private void listContatos_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
-        {
-            ListView.SelectedListViewItemCollection itensSelecionados = listContatos.SelectedItems;
-
-            foreach (ListViewItem item in itensSelecionados)
-            {
-                idContatoSelecionado = Convert.ToInt32(item.SubItems[0].Text);      //convert.toint32 aceita null como 0 sem lançar exeção (também aceita objetos)
-
-                txtNome.Text = item.SubItems[1].Text;       //pega o texto do campo 1 (nome) e coloca no textbox txtNome
-                txtTelefone.Text = item.SubItems[2].Text;   //pega o texto do campo 2 (telefone) e coloca no textbox txtTelefone
-                txtEmail.Text = item.SubItems[3].Text;      //pega o texto do campo 3 (email) e coloca no textbox txtEmail  
-
-                button4.Visible = true;
-            }
-        }
-
-
+        /// <summary>
+        /// menu contexto | excluir
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
             excluirContato();
-        }
-
-
-        private void excluirContato()
-        {
-            try
-            {
-                DialogResult confirmacao = MessageBox.Show("Tem certeza que deseja excluir o registro?",
-                                                            "CUIDADO", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-
-                if (confirmacao == DialogResult.Yes)
-                {
-
-                    Conexao = new MySqlConnection(data_source);
-                    Conexao.Open();
-                    MySqlCommand cmd = new MySqlCommand();
-                    cmd.Connection = Conexao;
-                    cmd.CommandText = "DELETE FROM contato " +
-                                      "WHERE id=@id";
-                    cmd.Parameters.AddWithValue("@id", idContatoSelecionado);
-                    cmd.Prepare();
-                    cmd.ExecuteNonQuery();
-
-                    MessageBox.Show("Contato excluido com suceesso!", "Excluido", MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
-
-                    CarregaContato();
-
-                }
-            }
-            catch (MySqlException ex)
-            {
-                MessageBox.Show("Erro: " + ex.Number + " Ocorreu:" + ex.Message, "Erro",
-                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            finally
-            {
-                Conexao.Close();
-            }
         }
 
 
@@ -346,5 +236,124 @@ namespace WinFormsApp1
                 Conexao.Close();
             }
         }
+
+
+        private void excluirContato()
+        {
+            try
+            {
+                DialogResult confirmacao = MessageBox.Show("Tem certeza que deseja excluir o registro?",
+                                                            "CUIDADO", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                if (confirmacao == DialogResult.Yes)
+                {
+
+                    Conexao = new MySqlConnection(data_source);
+                    Conexao.Open();
+                    MySqlCommand cmd = new MySqlCommand();
+                    cmd.Connection = Conexao;
+                    cmd.CommandText = "DELETE FROM contato " +
+                                      "WHERE id=@id";
+                    cmd.Parameters.AddWithValue("@id", idContatoSelecionado);
+                    cmd.Prepare();
+                    cmd.ExecuteNonQuery();
+
+                    MessageBox.Show("Contato excluido com suceesso!", "Excluido", MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+
+                    CarregaContato();
+
+                }
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show("Erro: " + ex.Number + " Ocorreu:" + ex.Message, "Erro",
+                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                Conexao.Close();
+            }
+        }
+
+
+        private void CarregaContato()
+        {
+            try
+            {
+                Conexao = new MySqlConnection(data_source);
+                Conexao.Open();
+
+                MySqlCommand cmd = new MySqlCommand();
+                cmd.Connection = Conexao;
+                cmd.CommandText = "SELECT * FROM contato ORDER BY id DESC";
+                cmd.Prepare();
+                MySqlDataReader reader = cmd.ExecuteReader();
+
+                listContatos.Items.Clear();
+                while (reader.Read())       //retorna true sempre que houver mais registros para ler
+                {
+                    string[] linha =        //armazena em um novo vetor os dados dos campos 0,1,2,3 da tabela contato
+                    {
+                        reader[0].ToString(),       // Converte qualquer tipo para string
+                        reader[1].ToString(),
+                        reader[2].ToString(),
+                        reader[3].ToString(),
+                    };
+                    var linhaListView = new ListViewItem(linha);            //cria um objeto ListViewItem com os dados da linha
+                    listContatos.Items.Add(linhaListView);          //exibe a variavel linhaListView na ListView listContatos
+                }
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show("Erro: " + ex.Number + " Ocorreu:" + ex.Message, "Erro",
+                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                Conexao.Close();
+            }
+        }
+
+
+        private void LimpaCampos()
+        {
+            idContatoSelecionado = null;
+            txtNome.Clear();
+            txtTelefone.Clear();
+            txtEmail.Clear();
+
+            txtNome.Focus();
+            button4.Visible = false;
+        }
+
+
+        private void listContatos_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
+        {
+            ListView.SelectedListViewItemCollection itensSelecionados = listContatos.SelectedItems;
+
+            foreach (ListViewItem item in itensSelecionados)
+            {
+                idContatoSelecionado = Convert.ToInt32(item.SubItems[0].Text);      //convert.toint32 aceita null como 0 sem lançar exeção (também aceita objetos)
+
+                txtNome.Text = item.SubItems[1].Text;       //pega o texto do campo 1 (nome) e coloca no textbox txtNome
+                txtTelefone.Text = item.SubItems[2].Text;   //pega o texto do campo 2 (telefone) e coloca no textbox txtTelefone
+                txtEmail.Text = item.SubItems[3].Text;      //pega o texto do campo 3 (email) e coloca no textbox txtEmail  
+
+                button4.Visible = true;
+            }
+        }
+
+
+        
+
     }
 }

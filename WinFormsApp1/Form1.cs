@@ -35,7 +35,7 @@ namespace WinFormsApp1
 
         /// <summary>
         /// 
-        /// instancia objeto conexao com a 'fonte dos dados, usuario, senha e destino'.
+        /// SALVAR | instancia objeto conexao com a 'fonte dos dados, usuario, senha e destino'.
         /// cria o comando INSERT na variavel 'sql'.
         /// cria o objeto comando, com o código 'sql' e a 'Conexao' a ser usada como parâmetro.
         /// 
@@ -44,85 +44,13 @@ namespace WinFormsApp1
         /// <param name="e"></param>
         private void button1_Click(object sender, EventArgs e)
         {
-            try
-            {
-
-                Conexao = new MySqlConnection(data_source);
-                Conexao.Open();
-
-                MySqlCommand cmd = new MySqlCommand();
-                cmd.Connection = Conexao;
-
-                if (idContatoSelecionado == null)
-                {
-                    cmd.CommandText = "INSERT INTO contato (nome, telefone, email) VALUES (@nome, @telefone, @email)";
-                    cmd.Parameters.AddWithValue("@nome", txtNome.Text);
-                    cmd.Parameters.AddWithValue("@telefone", txtTelefone.Text);
-                    cmd.Parameters.AddWithValue("@email", txtEmail.Text);
-                    cmd.Prepare();
-                    cmd.ExecuteNonQuery();
-
-                    MessageBox.Show("Contato inserido com sucesso!", "Sucesso!",
-                                     MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else
-                {
-                    cmd.CommandText = "UPDATE contato " +
-                                      "SET nome =@nome, email=@email, telefone=@telefone " +
-                                      "WHERE id=@id";
-                    cmd.Parameters.AddWithValue("@nome", txtNome.Text);
-                    cmd.Parameters.AddWithValue("@telefone", txtTelefone.Text);
-                    cmd.Parameters.AddWithValue("@email", txtEmail.Text);
-                    cmd.Parameters.AddWithValue("@id", idContatoSelecionado);
-                    cmd.Prepare();
-                    cmd.ExecuteNonQuery();
-
-                    MessageBox.Show("Contato atualizado com sucesso!", "Sucesso!",
-                                     MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-
-                idContatoSelecionado = null;
-                CarregaContato();       //mostra os contatos no listView
-                LimpaCampos();          //limpa os textboxes
-
-                /*
-                 * código antigo
-                
-                // criar conexão com MySql usando a propriedade criada na classe
-                Conexao = new MySqlConnection(data_source);         // objeto conexao com a fonte de dados como parâmetro
-
-                string sql = "INSERT INTO contato (nome, telefone, email)" +
-                           $" VALUES ('{txtNome.Text}','{txtTelefone.Text}','{txtEmail.Text}')";
-
-                // Executar comando INSERT
-                MySqlCommand comando = new MySqlCommand(sql, Conexao);
-
-                Conexao.Open();
-
-                comando.ExecuteReader();
-
-                MessageBox.Show("Contato adicionado com sucesso!");
-                */
-            }
-            catch (MySqlException ex)
-            {
-                MessageBox.Show("Erro: " + ex.Number + " Ocorreu:" + ex.Message, "Erro",
-                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            finally
-            {
-                Conexao.Close();
-            }
+            alterarOuSalvarContato();
         }
 
 
         /// <summary>
         /// 
-        /// cria uma string 'q' com o que foi inserido no textbox txtBuscar
+        /// BUSCAR | cria uma string 'q' com o que foi inserido no textbox txtBuscar
         /// conecta ao banco de dados
         /// cria a sentença sql com a busca do usuario
         /// cria o objeto comando com o código e a conexão a serem usadas
@@ -197,6 +125,30 @@ namespace WinFormsApp1
         }
 
 
+        /// <summary>
+        /// 
+        /// NOVO | reseta os textboxes e o idContatoSelecionado
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void button3_Click(object sender, EventArgs e)
+        {
+            LimpaCampos();
+        }
+
+
+        /// <summary>
+        /// 
+        /// EXCLUIR | 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void button4_Click(object sender, EventArgs e)
+        {
+            excluirContato();
+        }
+
+
         private void CarregaContato()
         {
             try
@@ -242,9 +194,13 @@ namespace WinFormsApp1
 
         private void LimpaCampos()
         {
+            idContatoSelecionado = null;
             txtNome.Clear();
             txtTelefone.Clear();
             txtEmail.Clear();
+
+            txtNome.Focus();
+            button4.Visible = false;
         }
 
 
@@ -259,16 +215,136 @@ namespace WinFormsApp1
                 txtNome.Text = item.SubItems[1].Text;       //pega o texto do campo 1 (nome) e coloca no textbox txtNome
                 txtTelefone.Text = item.SubItems[2].Text;   //pega o texto do campo 2 (telefone) e coloca no textbox txtTelefone
                 txtEmail.Text = item.SubItems[3].Text;      //pega o texto do campo 3 (email) e coloca no textbox txtEmail  
+
+                button4.Visible = true;
             }
         }
 
 
-        private void button3_Click(object sender, EventArgs e)
+        private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            idContatoSelecionado = null;
-            LimpaCampos();
-            txtNome.Focus();
+            excluirContato();
+        }
 
+
+        private void excluirContato()
+        {
+            try
+            {
+                DialogResult confirmacao = MessageBox.Show("Tem certeza que deseja excluir o registro?",
+                                                            "CUIDADO", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                if (confirmacao == DialogResult.Yes)
+                {
+
+                    Conexao = new MySqlConnection(data_source);
+                    Conexao.Open();
+                    MySqlCommand cmd = new MySqlCommand();
+                    cmd.Connection = Conexao;
+                    cmd.CommandText = "DELETE FROM contato " +
+                                      "WHERE id=@id";
+                    cmd.Parameters.AddWithValue("@id", idContatoSelecionado);
+                    cmd.Prepare();
+                    cmd.ExecuteNonQuery();
+
+                    MessageBox.Show("Contato excluido com suceesso!", "Excluido", MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+
+                    CarregaContato();
+
+                }
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show("Erro: " + ex.Number + " Ocorreu:" + ex.Message, "Erro",
+                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                Conexao.Close();
+            }
+        }
+
+
+        private void alterarOuSalvarContato()
+        {
+            try
+            {
+
+                Conexao = new MySqlConnection(data_source);
+                Conexao.Open();
+
+                MySqlCommand cmd = new MySqlCommand();
+                cmd.Connection = Conexao;
+
+                if (idContatoSelecionado == null)
+                {
+                    cmd.CommandText = "INSERT INTO contato (nome, telefone, email) VALUES (@nome, @telefone, @email)";
+                    cmd.Parameters.AddWithValue("@nome", txtNome.Text);
+                    cmd.Parameters.AddWithValue("@telefone", txtTelefone.Text);
+                    cmd.Parameters.AddWithValue("@email", txtEmail.Text);
+                    cmd.Prepare();
+                    cmd.ExecuteNonQuery();
+
+                    MessageBox.Show("Contato inserido com sucesso!", "Sucesso!",
+                                     MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    cmd.CommandText = "UPDATE contato " +
+                                      "SET nome =@nome, email=@email, telefone=@telefone " +
+                                      "WHERE id=@id";
+                    cmd.Parameters.AddWithValue("@nome", txtNome.Text);
+                    cmd.Parameters.AddWithValue("@telefone", txtTelefone.Text);
+                    cmd.Parameters.AddWithValue("@email", txtEmail.Text);
+                    cmd.Parameters.AddWithValue("@id", idContatoSelecionado);
+                    cmd.Prepare();
+                    cmd.ExecuteNonQuery();
+
+                    MessageBox.Show("Contato atualizado com sucesso!", "Sucesso!",
+                                     MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+
+                idContatoSelecionado = null;
+                CarregaContato();       //mostra os contatos no listView
+                LimpaCampos();          //limpa os textboxes
+
+                /*
+                 * código antigo
+                
+                // criar conexão com MySql usando a propriedade criada na classe
+                Conexao = new MySqlConnection(data_source);         // objeto conexao com a fonte de dados como parâmetro
+
+                string sql = "INSERT INTO contato (nome, telefone, email)" +
+                           $" VALUES ('{txtNome.Text}','{txtTelefone.Text}','{txtEmail.Text}')";
+
+                // Executar comando INSERT
+                MySqlCommand comando = new MySqlCommand(sql, Conexao);
+
+                Conexao.Open();
+
+                comando.ExecuteReader();
+
+                MessageBox.Show("Contato adicionado com sucesso!");
+                */
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show("Erro: " + ex.Number + " Ocorreu:" + ex.Message, "Erro",
+                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                Conexao.Close();
+            }
         }
     }
 }
